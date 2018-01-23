@@ -20,7 +20,7 @@ public class JDBCTests {
     public void testJDBC() throws Exception {
         Properties properties = new Properties();
 
-        properties.put("url", "jdbc:elasticsearch://192.168.1.157:9300,192.168.1.143:9300,192.168.1.97:9300/mysql_daijia_kuaipay*/");
+        properties.put("url", "jdbc:elasticsearch://192.168.1.157:9300,192.168.1.143:9300,192.168.1.97:9300/index/");
         properties.put("username","123456");
         properties.put("password","123456");
         properties.put("clusterName","test");
