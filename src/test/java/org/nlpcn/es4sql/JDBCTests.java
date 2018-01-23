@@ -20,13 +20,13 @@ public class JDBCTests {
     public void testJDBC() throws Exception {
         Properties properties = new Properties();
 
-        properties.put("url", "jdbc:elasticsearch://10.95.117.157:9300,10.95.97.143:9300,10.95.96.97:9300/mysql_daijia_kuaipay*/");
-        properties.put("username","24304");
-        properties.put("password","nal39AE3lgbvw");
-        properties.put("clusterName","elk-test");
+        properties.put("url", "jdbc:elasticsearch://192.168.1.157:9300,192.168.1.143:9300,192.168.1.97:9300/mysql_daijia_kuaipay*/");
+        properties.put("username","123456");
+        properties.put("password","123456");
+        properties.put("clusterName","test");
         DruidDataSource dds = (DruidDataSource) ElasticSearchDruidDataSourceFactory.createDataSource(properties);
         Connection connection = dds.getConnection();
-        String sql = "SELECT * FROM account_flow_statement where account_id = 2";
+        String sql = "SELECT * FROM account where account_id = 2";
 
 
         PreparedStatement ps = connection.prepareStatement(sql);
