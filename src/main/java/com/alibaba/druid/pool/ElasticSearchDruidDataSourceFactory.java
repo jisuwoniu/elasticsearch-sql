@@ -23,8 +23,9 @@ public class ElasticSearchDruidDataSourceFactory extends DruidDataSourceFactory 
 
     @SuppressWarnings("rawtypes")
     public static DataSource createDataSource(Map properties) throws Exception {
-        DruidDataSource dataSource = new ElasticSearchDruidDataSource();
+        ElasticSearchDruidDataSource  dataSource = new ElasticSearchDruidDataSource();
         config(dataSource, properties);
+        dataSource.setClusterName(properties.get("clusterName")+"");
         return dataSource;
     }
 }

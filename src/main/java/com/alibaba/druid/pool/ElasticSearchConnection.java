@@ -23,10 +23,16 @@ public class ElasticSearchConnection implements Connection {
 
     private Client client;
 
-    public ElasticSearchConnection(String jdbcUrl) {
+    private String index;
 
+    public ElasticSearchConnection(String jdbcUrl,String clusterName,String userName,String password) {
 
-        Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
+        String[] hostAndPortAndIndexArray = jdbcUrl.split("/");
+        if(hostAndPortAndIndexArray != null && hostAndPortAndIndexArray.length >=4){
+            index = hostAndPortAndIndexArray[3];
+        }
+        Settings settings = Settings.settingsBuilder().put("cluster.name", clusterName)
+                .put("shield.user", userName+":"+password).build();
         try {
             TransportClient transportClient = TransportClient.builder().settings(settings).build();
 
@@ -811,5 +817,13 @@ public class ElasticSearchConnection implements Connection {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
     }
 }

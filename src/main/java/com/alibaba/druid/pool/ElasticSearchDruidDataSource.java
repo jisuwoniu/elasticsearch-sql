@@ -75,6 +75,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
     private long activePeakTime = 0;
     private int poolingPeak = 0;
     private long poolingPeakTime = 0;
+    private String clusterName = "";
 
     // store
     private volatile DruidConnectionHolder[] connections;
@@ -614,6 +615,8 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
         String url = this.getUrl();
         Properties connectProperties = getConnectProperties();
 
+        connectProperties.put("shield.user",this.getUsername()+":"+this.getPassword());
+        connectProperties.put("cluster.name",this.getClusterName());
 
         Connection conn;
 
@@ -655,7 +658,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
 
     @Override
     public Connection createPhysicalConnection(String url, Properties info) throws SQLException {
-        Connection conn = new ElasticSearchConnection(url);
+        Connection conn = new ElasticSearchConnection(url,getClusterName(),getUsername(),getPassword());
         createCount.incrementAndGet();
 
         return conn;
@@ -2695,4 +2698,11 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
 
     }
 
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 }

@@ -19,23 +19,27 @@ public class JDBCTests {
     @Test
     public void testJDBC() throws Exception {
         Properties properties = new Properties();
-        properties.put("url", "jdbc:elasticsearch://127.0.0.1:9300/" + TestsConstants.TEST_INDEX);
+
+        properties.put("url", "jdbc:elasticsearch://10.95.117.157:9300,10.95.97.143:9300,10.95.96.97:9300/mysql_daijia_kuaipay*/");
+        properties.put("username","24304");
+        properties.put("password","nal39AE3lgbvw");
+        properties.put("clusterName","elk-test");
         DruidDataSource dds = (DruidDataSource) ElasticSearchDruidDataSourceFactory.createDataSource(properties);
         Connection connection = dds.getConnection();
-        PreparedStatement ps = connection.prepareStatement("SELECT  gender,lastname,age from  " + TestsConstants.TEST_INDEX + " where lastname='Heath'");
+        String sql = "SELECT * FROM account_flow_statement where account_id = 2";
+
+
+        PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet resultSet = ps.executeQuery();
         List<String> result = new ArrayList<String>();
         while (resultSet.next()) {
-            result.add(resultSet.getString("lastname") + "," + resultSet.getInt("age") + "," + resultSet.getString("gender"));
+            result.add(resultSet.getInt("account_id") + "," + resultSet.getInt("rel_account_id") + "," + resultSet.getString("flow_no"));
         }
-
+        System.out.println(result);
         ps.close();
         connection.close();
         dds.close();
-
-        Assert.assertTrue(result.size()==2);
-        Assert.assertTrue(result.get(0).equals("Heath,39,F"));
-        Assert.assertTrue(result.get(1).equals("Heath,39,F"));
+        System.out.println(result);
     }
 
 }
