@@ -1,11 +1,7 @@
 package com.alibaba.druid.pool;
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
-import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
-import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
 import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -43,8 +39,13 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
         conn.beforeExecute();
         try {
 
-
-            ObjectResult extractor = getObjectResult(true, getSql(), false, false, true);
+            ElasticSearchPreparedStatement elasticSearchPreparedStatement = (ElasticSearchPreparedStatement)this.getRawStatement();
+            List<Object> objects = elasticSearchPreparedStatement.paramter;
+            String sql = getSql();
+            for(Object object:objects){
+                sql = sql.replace("?",object+"");
+            }
+            ObjectResult extractor = getObjectResult(true, sql, false, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
 
@@ -65,8 +66,49 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
         }
     }
 
+    @Override
+    public boolean execute() throws SQLException {
+        checkOpen();
+
+        incrementExecuteCount();
+        transactionRecord(getSql());
+
+        oracleSetRowPrefetch();
+
+        conn.beforeExecute();
+        boolean result = false;
+        try {
+            ElasticSearchPreparedStatement elasticSearchPreparedStatement = (ElasticSearchPreparedStatement)this.getRawStatement();
+            List<Object> objects = elasticSearchPreparedStatement.paramter;
+            String sql = getSql();
+            if(objects != null && objects.size()>0){
+                for(Object object:objects){
+                    sql = sql.replace("?",object+"");
+                }
+            }
+
+            ObjectResult extractor = getObjectResult(true, sql, false, false, true);
+            List<String> headers = extractor.getHeaders();
+            List<List<Object>> lines = extractor.getLines();
+
+            ResultSet rs = new ElasticSearchResultSet(this, headers, lines);
+
+            if (rs == null) {
+                return result;
+            }
+
+            DruidPooledResultSet poolableResultSet = new DruidPooledResultSet(this, rs);
+            addResultSetTrace(poolableResultSet);
+
+            return true;
+        } catch (Throwable t) {
+            throw checkException(t);
+        } finally {
+            conn.afterExecute();
+        }
+    }
     private ObjectResult getObjectResult(boolean flat, String query, boolean includeScore, boolean includeType, boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
-        SearchDao searchDao = new org.nlpcn.es4sql.SearchDao(client);
+        SearchDao searchDao = new SearchDao(client);
 
         //String rewriteSQL = searchDao.explain(getSql()).explain().explain();
 
